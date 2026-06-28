@@ -120,97 +120,140 @@ show interfaces trunk \
 ![2](https://user-images.githubusercontent.com/85602495/152174571-f344c6ec-ec34-4683-8f8b-51dbe57d6b45.png)
 
 ## Ответ:
-Шаг 1. Соберите схему:
 
-Перетащите на рабочее поле 3 коммутатора Cisco 2960-24TT.
+Конфигурация для кольцевой топологии (с 2 линками между соседями) \
+Switch0 \
 
-Перетащите 3 компьютера (PC-PT).
 
-Соедините коммутаторы между собой: каждый с каждым используйте по 2 кабеля (тип Copper Straight-Through). Это даст 6 физических линков.
-
-Подключите каждый ПК к своему коммутатору (например, PC0 → Switch1, PC1 → Switch2, третий ПК → Switch3) одним кабелем.
-
-Убедитесь, что подключения используют порты GigabitEthernet (например, Gig0/1 – Gig0/4).
-
-Шаг 2. Настройте IP-адреса на ПК:
-
-Кликните на каждый ПК → вкладка Desktop → IP Configuration.
-
-Назначьте адреса из одной подсети (маска 255.255.255.0):
-
-PC0: 192.168.1.1
-
-PC1: 192.168.1.2
-
-PC2: 192.168.1.3
-
-Шлюз не обязателен (поскольку это одна подсеть), но можно указать 192.168.1.254 на всех.
-
-Шаг 3. Примените команды на коммутаторах (копируйте и вставляйте):
-
-Перейдите в CLI каждого коммутатора и выполните конфигурацию из моего предыдущего ответа. Вот краткая сводка:
-
-Switch1 (группы 1 и 2):
+Связь со Switch1 (группа 1) и со Switch3 (группа 4):
 
 
 enable \
 configure terminal \
-interface range gig0/1-2 \
+! Связь со Switch1 \
+interface range gigabitethernet 0/1-2 \
 channel-group 1 mode active \
-exit \
-interface range gig0/3-4 \
-channel-group 2 mode active \
 exit \
 interface port-channel 1 \
 switchport mode trunk \
 exit \
-interface port-channel 2 \
+! Связь со Switch3 \
+interface range gigabitethernet 0/3-4 \
+channel-group 4 mode active \
+exit \
+interface port-channel 4 \
 switchport mode trunk \
 end \
-write \
+write memory \
+Switch1 \
 
 
-Switch2 (группы 1 и 3):
+Связь со Switch0 (группа 1) и со Switch2 (группа 2): \
 
 
 enable \
 configure terminal \
-interface range gig0/1-2 \
+! Связь со Switch0 \
+interface range gigabitethernet 0/1-2 \
 channel-group 1 mode active \
-exit \
-interface range gig0/3-4 \
-channel-group 3 mode active \
 exit \
 interface port-channel 1 \
 switchport mode trunk \
 exit \
-interface port-channel 3 \
+! Связь со Switch2 \
+interface range gigabitethernet 0/3-4 \
+channel-group 2 mode active \
+exit \
+interface port-channel 2 \
 switchport mode trunk \
 end \
-write \
+write memory \
+Switch2 
 
 
-Switch3 (группы 2 и 3):
+Связь со Switch1 (группа 2) и со Switch3 (группа 3):
 
 
 enable \
 configure terminal \
-interface range gig0/1-2 \
+! Связь со Switch1 \
+interface range gigabitethernet 0/1-2 \
 channel-group 2 mode active \
-exit \
-interface range gig0/3-4 \
-channel-group 3 mode active \
 exit \
 interface port-channel 2 \
 switchport mode trunk \
 exit \
+! Связь со Switch3 \
+interface range gigabitethernet 0/3-4 \
+channel-group 3 mode active \
+exit \
 interface port-channel 3 \
 switchport mode trunk \
 end \
-write 
+write memory \
+Switch3 
 
-Шаг 4. Тестирование:
 
-Проверьте пинг между ПК (например, от PC0 к PC1). Он должен быть успешным.
+Связь со Switch2 (группа 3) и со Switch0 (группа 4):
 
-Выполните команды show etherchannel summary и show interfaces status на любом коммутаторе, чтобы увидеть объединённые каналы.
+
+enable \
+configure terminal \
+! Связь со Switch2 \
+interface range gigabitethernet 0/1-2 \
+channel-group 3 mode active \
+exit \
+interface port-channel 3 \
+switchport mode trunk \
+exit \
+! Связь со Switch0 \
+interface range gigabitethernet 0/3-4 \
+channel-group 4 mode active \
+exit \
+interface port-channel 4 \
+switchport mode trunk \
+end \
+write memory
+
+ IP-адреса ПК
+ 
+Устройство	IP-адрес	Маска подсети \
+PC0	192.168.1.1	255.255.255.0 \
+PC1	192.168.1.2	255.255.255.0 \
+
+ 
+ Проверка и тестирование
+
+ 
+1. Проверка EtherChannel:
+   
+show etherchannel summary \
+Ожидаемый вывод:
+
+text \
+Group  Port-channel  Protocol  Ports \
+------+-------------+---------+--------------- \
+1      Po1(SU)      LACP      Gi0/1(P) Gi0/2(P) \
+2      Po2(SU)      LACP      Gi0/3(P) Gi0/4(P) \
+3      Po3(SU)      LACP      Gi0/1(P) Gi0/2(P) \
+4      Po4(SU)      LACP      Gi0/3(P) Gi0/4(P)
+
+2. Проверка связности:
+   
+С PC0 выполните ping 192.168.1.2 — должен быть успешным.
+
+4. Тест отказоустойчивости:
+   
+Отключите один порт в группе (например, на Switch0):
+
+
+configure terminal
+interface gigabitethernet 0/1
+shutdown
+end
+Снова выполните ping — связь должна сохраниться через второй порт в группе.
+
+4. Проверка STP (Spanning Tree Protocol):
+В кольцевой топологии STP автоматически заблокирует один из линков, чтобы избежать петель:
+
+show spanning-tree

@@ -269,4 +269,4 @@ show spanning-tree
 Важно! В эмуляторе Cisco Packet Tracer есть особенность: часть настроек сетевого оборудования в этой лабораторной работе не сохраняется, когда вы сохраняете ее в .pkt файл. \
 Решение: На всех сетевых устройствах после окончания настройки нужно выполнить команду "write" или "copy running-config startap-config".
 
-[!3](https://user-images.githubusercontent.com/77622076/229756419-f559b248-6336-4976-858b-19443ef4c32f.jpg)
+![3](https://user-images.githubusercontent.com/77622076/229756419-f559b248-6336-4976-858b-19443ef4c32f.jpg)

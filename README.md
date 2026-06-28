@@ -307,4 +307,4 @@ ping 192.168.10.1 (виртуальный шлюз HSRP) — OK
 
 С PC0: tracert 192.168.10.20 — путь должен идти через шлюз .1
 
-
+[PKT ALL](https://github.com/jdm2us-art/net8/blob/main/all8.pkt)

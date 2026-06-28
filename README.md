@@ -270,3 +270,41 @@ show spanning-tree
 Решение: На всех сетевых устройствах после окончания настройки нужно выполнить команду "write" или "copy running-config startap-config".
 
 ![3](https://user-images.githubusercontent.com/77622076/229756419-f559b248-6336-4976-858b-19443ef4c32f.jpg)
+
+## ОТВЕТ:
+
+ПРОВЕРКА РАБОТЫ:
+На MSW-1 выполните:
+
+show etherchannel summary — проверьте, что оба порта в группе
+
+show ip interface brief — проверьте статус Port-channel 1
+
+show ip route — проверьте маршруты
+
+show interfaces port-channel 1 — проверьте состояние канала
+
+show standby brief — проверьте HSRP
+
+На SW-ACC выполните:
+
+show etherchannel summary — проверьте, что оба порта в группе
+
+show interfaces trunk — проверьте, что Port-channel 1 в режиме trunk
+
+show vlan brief — проверьте порты
+
+ПРОВЕРКА ДОСТУПНОСТИ:
+С PC0:
+
+ping 192.168.10.20 (Server0) — OK
+
+ping 192.168.10.21 (Server1) — OK
+
+ping 10.10.10.1 (MSW-1 EtherChannel IP) — OK
+
+ping 192.168.10.1 (виртуальный шлюз HSRP) — OK
+
+С PC0: tracert 192.168.10.20 — путь должен идти через шлюз .1
+
+

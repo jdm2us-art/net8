@@ -120,3 +120,97 @@ show interfaces trunk \
 ![2](https://user-images.githubusercontent.com/85602495/152174571-f344c6ec-ec34-4683-8f8b-51dbe57d6b45.png)
 
 ## Ответ:
+Шаг 1. Соберите схему:
+
+Перетащите на рабочее поле 3 коммутатора Cisco 2960-24TT.
+
+Перетащите 3 компьютера (PC-PT).
+
+Соедините коммутаторы между собой: каждый с каждым используйте по 2 кабеля (тип Copper Straight-Through). Это даст 6 физических линков.
+
+Подключите каждый ПК к своему коммутатору (например, PC0 → Switch1, PC1 → Switch2, третий ПК → Switch3) одним кабелем.
+
+Убедитесь, что подключения используют порты GigabitEthernet (например, Gig0/1 – Gig0/4).
+
+Шаг 2. Настройте IP-адреса на ПК:
+
+Кликните на каждый ПК → вкладка Desktop → IP Configuration.
+
+Назначьте адреса из одной подсети (маска 255.255.255.0):
+
+PC0: 192.168.1.1
+
+PC1: 192.168.1.2
+
+PC2: 192.168.1.3
+
+Шлюз не обязателен (поскольку это одна подсеть), но можно указать 192.168.1.254 на всех.
+
+Шаг 3. Примените команды на коммутаторах (копируйте и вставляйте):
+
+Перейдите в CLI каждого коммутатора и выполните конфигурацию из моего предыдущего ответа. Вот краткая сводка:
+
+Switch1 (группы 1 и 2):
+
+
+enable \
+configure terminal \
+interface range gig0/1-2 \
+channel-group 1 mode active \
+exit \
+interface range gig0/3-4 \
+channel-group 2 mode active \
+exit \
+interface port-channel 1 \
+switchport mode trunk \
+exit \
+interface port-channel 2 \
+switchport mode trunk \
+end \
+write \
+
+
+Switch2 (группы 1 и 3):
+
+
+enable \
+configure terminal \
+interface range gig0/1-2 \
+channel-group 1 mode active \
+exit \
+interface range gig0/3-4 \
+channel-group 3 mode active \
+exit \
+interface port-channel 1 \
+switchport mode trunk \
+exit \
+interface port-channel 3 \
+switchport mode trunk \
+end \
+write \
+
+
+Switch3 (группы 2 и 3):
+
+
+enable \
+configure terminal \
+interface range gig0/1-2 \
+channel-group 2 mode active \
+exit \
+interface range gig0/3-4 \
+channel-group 3 mode active \
+exit \
+interface port-channel 2 \
+switchport mode trunk \
+exit \
+interface port-channel 3 \
+switchport mode trunk \
+end \
+write 
+
+Шаг 4. Тестирование:
+
+Проверьте пинг между ПК (например, от PC0 к PC1). Он должен быть успешным.
+
+Выполните команды show etherchannel summary и show interfaces status на любом коммутаторе, чтобы увидеть объединённые каналы.
